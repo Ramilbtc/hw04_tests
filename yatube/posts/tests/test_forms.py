@@ -4,6 +4,8 @@ from django.urls import reverse
 from posts.forms import PostForm
 from posts.models import Group, Post
 User = get_user_model()
+
+
 class PostCreateFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -22,6 +24,7 @@ class PostCreateFormTests(TestCase):
         cls.authorized_author = Client()
         cls.authorized_author.force_login(cls.author)
         cls.form = PostForm()
+
     def test_create_post_form(self):
         """Валидная форма create_post создает запись."""
         posts_count = Post.objects.count()
@@ -41,6 +44,7 @@ class PostCreateFormTests(TestCase):
         ))
         self.assertEqual(Post.objects.count(), posts_count + 1)
         self.assertTrue(post.text, form_data['text'])
+
     def test_post_edit_form(self):
         """Валидная форма post_edit редактирует запись."""
         posts_count = Post.objects.count()
