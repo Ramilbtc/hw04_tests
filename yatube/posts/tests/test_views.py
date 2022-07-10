@@ -152,6 +152,7 @@ class PostViewTests(TestCase):
                 self.assertIsInstance(form_field, expected)
                 self.assertTrue(response.context.get('is_edit'))
 
+
 class PaginatorViewsTest(TestCase):
     @classmethod
     def setUpClass(cls):

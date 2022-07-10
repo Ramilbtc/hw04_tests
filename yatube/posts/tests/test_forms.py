@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from posts.forms import PostForm
 from posts.models import Group, Post
 
 User = get_user_model()
@@ -29,7 +28,6 @@ class PostCreateFormTests(TestCase):
     def test_create_post_form(self):
         """Валидная форма create_post создает запись."""
         posts_count = Post.objects.count()
-        post = Post.objects.all()[0]
         form_data = {
             'text': 'Тестовый пост1',
             'group': self.group.id
@@ -48,7 +46,6 @@ class PostCreateFormTests(TestCase):
     def test_post_edit_form(self):
         """Валидная форма post_edit редактирует запись."""
         posts_count = Post.objects.count()
-        post = Post.objects.all()[0]
         form_data = {
             'text': 'Тестовый edit пост',
             'group': self.group.id
@@ -63,4 +60,3 @@ class PostCreateFormTests(TestCase):
             kwargs={'post_id': self.post.id}
         ))
         self.assertEqual(Post.objects.count(), posts_count)
-
