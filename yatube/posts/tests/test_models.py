@@ -20,7 +20,7 @@ class PostModelTest(TestCase):
         )
         cls.post = Post.objects.create(
             author=cls.user,
-            text='Тестовая пост',
+            text='Тестовый новый пост',
         )
 
     def test_models_have_correct_object_names(self):
@@ -29,7 +29,7 @@ class PostModelTest(TestCase):
         post = PostModelTest.post
         models_str = {
             group: group.title,
-            post: post.text[0:15],
+            post: post.text[:15],
         }
         for model, value in models_str.items():
             with self.subTest(model=model):
