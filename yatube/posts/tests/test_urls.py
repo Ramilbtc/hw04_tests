@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
-
 from http import HTTPStatus
 
 from ..models import Group, Post
@@ -75,7 +74,24 @@ class StaticURLTests(TestCase):
             response = self.author.get('/posts/1/edit/')
             self.assertEqual(response.status_code, HTTPStatus.OK)
 
-    def test_posts_edit_list_url_redirect_anonymous(self):
+    def test_posts_edit_url_redirect_location_authorized(self):
+        """Страница /post_edit/ перенаправляет автора поста."""
+        if self.authorized_author == self.user:
+            response = self.author.get('/posts/1/edit/', follow=True)
+            self.assertRedirects(
+                response, '/posts/1/'
+            )
+
+    def test_posts_edit_url_redirect_location_auth(self):
+        """Страница /post_edit/ перенаправляет
+        авторизированного пользователя.
+        """
+        response = self.authorized_client.get('/posts/1/edit/', follow=True)
+        self.assertRedirects(
+            response, '/posts/1/'
+        )
+
+    def test_posts_edit_url_redirect_anonymous(self):
         """Страница /post_edit/ перенаправляет анонимного пользователя."""
         response = self.guest_client.get('/posts/1/edit/', follow=True)
         self.assertRedirects(
@@ -111,4 +127,4 @@ class StaticURLTests(TestCase):
     def test_unexisting_page_added_url_exists_at_desired_location(self):
         """Страница /unexisting_page/ доступна любому пользователю."""
         response = self.guest_client.get('/unexisting_page/')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)

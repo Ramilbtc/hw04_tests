@@ -4,6 +4,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from posts.models import Group, Post
+from posts.forms import PostForm
 
 User = get_user_model()
 
@@ -25,7 +26,6 @@ class PostViewTests(TestCase):
         cls.post = Post.objects.create(
             author=PostViewTests.user,
             text='Тестовый пост',
-            id='1',
             group=PostViewTests.group,
         )
 
@@ -77,15 +77,7 @@ class PostViewTests(TestCase):
             with self.subTest(reverse_name=reverse_name):
                 response = self.authorized_client.get(reverse_name)
                 post = response.context['page_obj'][0]
-                text = post.text
-                author_username = post.author.username
-                group_title = post.group.title
-                group_description = post.group.description
-                self.assertEqual(text, self.post.text)
-                self.assertEqual(author_username, PostViewTests.user.username)
-                self.assertEqual(group_title, self.post.group.title)
-                self.assertEqual(group_description,
-                                 self.post.group.description)
+                self.assertEqual(post, self.post)
 
     def test_post_detail_show_correct_context(self):
         """Шаблон post_detail сформирован с правильным контекстом."""
@@ -127,10 +119,12 @@ class PostViewTests(TestCase):
             'text': forms.fields.CharField,
             'group': forms.fields.ChoiceField,
         }
+        form = response.context.get('form')
         for value, expected in form_fields.items():
             with self.subTest(value=value):
-                form_field = response.context.get('form').fields.get(value)
+                form_field = form.fields.get(value)
                 self.assertIsInstance(form_field, expected)
+        self.assertIsInstance(form, PostForm)
 
     def test_post_edit_page_show_correct_context(self):
         """Шаблон post_edit сформирован с правильным контекстом."""
