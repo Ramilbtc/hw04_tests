@@ -71,13 +71,33 @@ class PostViewTests(TestCase):
                 response = self.authorized_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
 
-    def test_pages_show_correct_context(self):
-        """Шаблон index/group/profile сформирован с правильным контекстом."""
-        for reverse_name in self.posts_pages_reverse:
-            with self.subTest(reverse_name=reverse_name):
-                response = self.authorized_client.get(reverse_name)
-                post = response.context['page_obj'][0]
-                self.assertEqual(post, self.post)
+    def test_index_page_show_correct_context(self):
+        """Шаблон index сформирован с правильным контекстом."""
+        response = self.authorized_client.get(reverse('posts:index'))
+        first_object = response.context['page_obj'][0]
+        post_text_0 = first_object.text
+        self.assertEqual(post_text_0, 'Тестовый пост')
+        self.assertEqual(first_object.pub_date, self.post.pub_date)
+        self.assertEqual(first_object.author.username, 'auth')
+        self.assertEqual(first_object.group.title, 'Тестовая группа')
+
+    def test_group_list_page_show_correct_context(self):
+        """Шаблон group_list сформирован с правильным контекстом."""
+        response = self.authorized_client.get(
+            reverse('posts:group_list', kwargs={'slug': 'test-slug'})
+        )
+        self.assertEqual(
+            response.context.get('group').title, 'Тестовая группа'
+        )
+        self.assertEqual(response.context.get('group').slug, 'test-slug')
+
+    def test_profile_page_show_correct_context(self):
+        """Шаблон profile сформирован с правильным контекстом."""
+        response = self.guest_client.get(
+            reverse('posts:profile', kwargs={'username': 'auth'})
+        )
+        self.assertIn('author', response.context)
+        self.assertEqual(response.context.get('author').username, 'auth')
 
     def test_post_detail_show_correct_context(self):
         """Шаблон post_detail сформирован с правильным контекстом."""
@@ -140,11 +160,13 @@ class PostViewTests(TestCase):
             'text': forms.fields.CharField,
             'group': forms.fields.ChoiceField
         }
+        form = response.context.get('form')
         for value, expected in form_fields.items():
             with self.subTest(value=value):
-                form_field = response.context.get('form').fields.get(value)
+                form_field = form.fields.get(value)
                 self.assertIsInstance(form_field, expected)
                 self.assertTrue(response.context.get('is_edit'))
+        self.assertIsInstance(form, PostForm)
 
 
 class PaginatorViewsTest(TestCase):

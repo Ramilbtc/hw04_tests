@@ -1,6 +1,6 @@
+from http import HTTPStatus
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
-from http import HTTPStatus
 
 from ..models import Group, Post
 
@@ -70,17 +70,23 @@ class StaticURLTests(TestCase):
 
     def test_posts_detail_url_exists_at_desired_location_authorized(self):
         """Страница /post_edit/ доступна автору поста."""
-        if self.authorized_author == self.user:
-            response = self.author.get('/posts/1/edit/')
-            self.assertEqual(response.status_code, HTTPStatus.OK)
+        example = Post.objects.create(
+            author=self.user,
+            text='Some author\'s text')
+        templates_url_names_author = {
+            f'/posts/{example.pk}/edit/',
+        }
+        for address in templates_url_names_author:
+            with self.subTest(address=address):
+                response = self.authorized_client.get(address)
+                self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_posts_edit_url_redirect_location_authorized(self):
         """Страница /post_edit/ перенаправляет автора поста."""
-        if self.authorized_author == self.user:
-            response = self.author.get('/posts/1/edit/', follow=True)
-            self.assertRedirects(
-                response, '/posts/1/'
-            )
+        response = self.authorized_author.get('/posts/1/edit/', follow=True)
+        self.assertRedirects(
+            response, '/posts/1/'
+        )
 
     def test_posts_edit_url_redirect_location_auth(self):
         """Страница /post_edit/ перенаправляет
