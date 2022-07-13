@@ -1,4 +1,5 @@
 from http import HTTPStatus
+
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 
@@ -113,11 +114,6 @@ class StaticURLTests(TestCase):
 
     def test_urls_uses_correct_template_auth(self):
         """URL-адрес использует соответствующий шаблон/авторизованный."""
-        if self.authorized_author == self.user:
-            for address, template in StaticURLTests.url_names_auth.items():
-                with self.subTest(address=address):
-                    response = self.authorized_author.get(address)
-                    self.assertTemplateUsed(response, template)
         for address, template in StaticURLTests.url_names_auth_user.items():
             with self.subTest(address=address):
                 response = self.authorized_author.get(address)

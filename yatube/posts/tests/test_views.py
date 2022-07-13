@@ -75,11 +75,15 @@ class PostViewTests(TestCase):
         """Шаблон index сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse('posts:index'))
         first_object = response.context['page_obj'][0]
-        post_text_0 = first_object.text
-        self.assertEqual(post_text_0, 'Тестовый пост')
-        self.assertEqual(first_object.pub_date, self.post.pub_date)
-        self.assertEqual(first_object.author.username, 'auth')
-        self.assertEqual(first_object.group.title, 'Тестовая группа')
+        posts_attributes = {
+            first_object.text: 'Тестовый пост',
+            first_object.pub_date: self.post.pub_date,
+            first_object.author.username: 'auth',
+            first_object.group.title: 'Тестовая группа'
+        }
+        for post_key, post_value in posts_attributes.items():
+            with self.subTest(post_key=post_key):
+                self.assertEqual(post_key, post_value)
 
     def test_group_list_page_show_correct_context(self):
         """Шаблон group_list сформирован с правильным контекстом."""
@@ -116,16 +120,16 @@ class PostViewTests(TestCase):
     def test_post_show_in_correct_pages(self):
         """ Пост отображается на главной странице и на странице группы,
         указанной при создании, не отображатеся в другой группе."""
-        for reverse_name in self.posts_pages_reverse:
-            with self.subTest(reverse_name=reverse_name):
-                response = self.authorized_client.get(reverse_name)
-                post = response.context['page_obj'][0]
-                text = post.text
-                author_username = post.author.username
-                group_title = post.group.title
-                self.assertEqual(text, self.post.text)
-                self.assertEqual(author_username, PostViewTests.user.username)
-                self.assertEqual(group_title, self.post.group.title)
+        response = self.authorized_client.get(reverse('posts:index'))
+        post = response.context['page_obj'][0]
+        posts_attributes = {
+            post.text: self.post.text,
+            post.author.username: PostViewTests.user.username,
+            post.group.title: self.post.group.title,
+        }
+        for post_key, post_value in posts_attributes.items():
+            with self.subTest(post_key=post_key):
+                self.assertEqual(post_key, post_value)
         response = self.authorized_client.get(
             reverse('posts:group_list',
                     kwargs={'slug': 'test_slug_empty_group'}))
